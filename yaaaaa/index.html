@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dear mẹ trẻ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a0033 0%, #330033 50%, #1a0033 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ===== PARTICLES BACKGROUND ===== */
+        #flowersCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ===== MUSIC CONTROL ===== */
+        .music-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .music-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .music-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .music-btn.playing .music-icon {
+            animation: pulse 1s infinite;
+        }
+
+        .music-note {
+            font-size: 18px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* ===== SCREENS ===== */
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+            z-index: 10;
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* ===== SCREEN 1: PASSWORD ===== */
+        .password-box {
+            background: rgba(60, 50, 70, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 50px 60px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .title {
+            font-size: 2.2em;
+            color: #ffb3c6;
+            margin-bottom: 40px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .dots {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .dot.filled {
+            background: #ffb3c6;
+            border-color: #ffb3c6;
+            box-shadow: 0 0 15px rgba(255, 179, 198, 0.8);
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .num-btn {
+            width: 75px;
+            height: 75px;
+            background: rgba(80, 70, 90, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: white;
+            font-size: 1.5em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .num-btn:hover {
+            background: rgba(100, 90, 110, 0.8);
+            transform: translateY(-3px);
+        }
+
+        .num-btn:active {
+            transform: translateY(0);
+        }
+
+        .delete-btn {
+            background: rgba(255, 75, 100, 0.3);
+            color: #ff6b8a;
+            font-size: 1.3em;
+        }
+
+        .hint {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9em;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* ===== SCREEN 2 ===== */
+        #screen2 {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #ffeaa7 100%);
+        }
+
+        .flower-animation-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #flowerAnimCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .continue-btn {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.3em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.5);
+            transition: all 0.3s ease;
+            z-index: 100;
+            opacity: 0;
+            animation: btnAppear 1s ease 3s forwards;
+        }
+
+        @keyframes btnAppear {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .continue-btn:hover {
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 15px 40px rgba(255, 107, 157, 0.7);
+        }
+
+        .continue-btn:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        /* ===== SCREEN 3: MAIN CONTENT ===== */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            max-width: 1400px;
+            width: 90%;
+            padding: 40px 20px;
+        }
+
+        .nav-btn {
+            position: fixed;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .up-btn {
+            top: 20%;
+        }
+
+        .down-btn {
+            bottom: 20%;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .left-panel {
+            display: flex;
+            align-items: center;
+        }
+
+        .letter-card {
+            background: rgba(40, 35, 50, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+        }
+
+        .letter-title {
+            color: #ffb3c6;
+            font-size: 1.6em;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .letter-body {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1em;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            white-space: pre-line;
+        }
+
+        .letter-body::after {
+            content: '|';
+            animation: blink 0.7s infinite;
+            color: #ffb3c6;
+        }
+
+        .letter-body.done::after {
+            display: none;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .letter-hint {
+            color: rgba(255, 179, 198, 0.8);
+            font-size: 0.95em;
+            margin-top: 20px;
+            animation: hintPulse 2s infinite;
+        }
+
+        @keyframes hintPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .right-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== CONTAINER BOARD - FIX ===== */
+        .chess-container {
+            width: 540px;
+            height: 540px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .background-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 20px;
+        }
+
+        /* ===== BOARD - FIX ===== */
+        .chess-board {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+            z-index: 3;
+        }
+
+        .chess-board.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .chess-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding: 35px 35px 35px 35px;
+        }
+
+        /*(a-h) */
+        .bottom-labels {
+            position: absolute;
+            bottom: 5px;
+            left: 35px;
+            right: 35px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .bottom-label {
+            flex: 1;
+            text-align: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        /*(8-1)*/
+        .left-labels {
+            position: absolute;
+            left: 5px;
+            top: 35px;
+            bottom: 35px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .left-label {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Grid BOARD - FIX */
+        .chess-grid-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .chess-grid {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .chess-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        /* Màu ô cờ xen kẽ */
+        .chess-cell.light {
+            background: #eee8d5;
+        }
+
+        .chess-cell.dark {
+            background: #769656;
+        }
+
+        .chess-cell:hover {
+            box-shadow: inset 0 0 20px rgba(255, 179, 198, 0.6);
+            filter: brightness(1.2);
+        }
+
+        .chess-cell.has-piece {
+            background: rgba(255, 179, 198, 0.3);
+        }
+
+        .piece-in-cell {
+            font-size: 40px;
+            animation: pieceAppear 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            cursor: pointer;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        @keyframes pieceAppear {
+            0% {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.2) rotate(20deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pieceRemove {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* ===== THANH QUÂN CỜ ===== */
+        .pieces-bar {
+            position: fixed;
+            bottom: -150px;
+            left: 0;
+            right: 0;
+            background: rgba(20, 20, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            text-align: center;
+            transition: bottom 0.5s ease;
+            z-index: 100;
+        }
+
+        .pieces-bar.active {
+            bottom: 0;
+        }
+
+        .pieces-title {
+            color: #ffb3c6;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .pieces-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .chess-piece {
+            width: 60px;
+            height: 60px;
+            font-size: 40px;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .chess-piece:hover {
+            transform: scale(1.15) translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(255, 179, 198, 0.4);
+        }
+
+        .chess-piece:active {
+            transform: scale(0.9);
+        }
+
+        .chess-piece.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .chess-piece.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .chess-container {
+                width: 450px;
+                height: 450px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .password-box {
+                padding: 40px 30px;
+            }
+
+            .num-btn {
+                width: 60px;
+                height: 60px;
+            }
+
+            .chess-container {
+                width: 350px;
+                height: 350px;
+            }
+
+            .letter-card {
+                padding: 25px;
+            }
+
+            .bottom-label, .left-label {
+                font-size: 14px;
+            }
+
+            .title {
+                font-size: 1.8em;
+            }
+
+            .continue-btn {
+                font-size: 1.1em;
+                padding: 15px 40px;
+            }
+
+            .piece-in-cell {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas cho hoa rơi nền -->
+    <canvas id="flowersCanvas"></canvas>
+
+    <!-- Nút Play Music -->
+    <div class="music-btn" id="musicBtn">
+        <div class="music-icon">▶</div>
+        <span>Play Music</span>
+        <div class="music-note">🎵</div>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="audio.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- SCREEN 1: NHẬP MẬT MÃ -->
+    <div id="screen1" class="screen active">
+        <div class="password-box">
+            <h1 class="title">GỬI MOM IU</h1>
+            
+            <div class="dots">
+                <div class="dot" id="dot1"></div>
+                <div class="dot" id="dot2"></div>
+                <div class="dot" id="dot3"></div>
+                <div class="dot" id="dot4"></div>
+            </div>
+
+            <div class="keypad">
+                <button class="num-btn" data-num="1">1</button>
+                <button class="num-btn" data-num="2">2</button>
+                <button class="num-btn" data-num="3">3</button>
+                <button class="num-btn" data-num="4">4</button>
+                <button class="num-btn" data-num="5">5</button>
+                <button class="num-btn" data-num="6">6</button>
+                <button class="num-btn" data-num="7">7</button>
+                <button class="num-btn" data-num="8">8</button>
+                <button class="num-btn" data-num="9">9</button>
+                <button class="num-btn" data-num="0">0</button>
+                <button class="num-btn delete-btn" data-num="del">✕</button>
+            </div>
+
+            <div class="hint">Gợi ý: Ngày sinh</div>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: HOA NỞ -->
+    <div id="screen2" class="screen">
+        <div class="flower-animation-container">
+            <canvas id="flowerAnimCanvas"></canvas>
+            <button class="continue-btn" id="continueBtn">Tiếp Tục</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: THƯ + BÀN CỜ -->
+    <div id="screen3" class="screen">
+        <div class="main-content">
+            <button class="nav-btn up-btn" id="upBtn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 15L12 9L6 15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <button class="nav-btn down-btn" id="downBtn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 9L12 15L18 9" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+
+            <div class="left-panel">
+    <div class="letter-card">
+        <h2 class="letter-title">Dear 01010100 01010100 01010100 01001000!</h2>
+        <div class="letter-body" id="letterText"></div>
+        <div class="letter-hint">Xếp cờ theo tọa độ i 🫰</div>
+    </div>
+
+    <!-- Quân cờ dưới thư -->
+    <div class="pieces-section" id="piecesSection">
+        <div class="pieces-section-title">Pick ở đây 👇</div>
+        <div class="pieces-grid" id="piecesContainer"></div>
+    </div>
+</div>
+            <div class="right-panel">
+                <div class="chess-container">
+                    <div class="image-container">
+                        <img src="https://i.imgur.com/YqKW6vY.png"  class="background-image">
+
+                        <div class="chess-board" id="chessBoard">
+                            <div class="chess-wrapper">
+                                <!-- Labels bên trái (8-1) -->
+                                <div class="left-labels">
+                                    <div class="left-label">8</div>
+                                    <div class="left-label">7</div>
+                                    <div class="left-label">6</div>
+                                    <div class="left-label">5</div>
+                                    <div class="left-label">4</div>
+                                    <div class="left-label">3</div>
+                                    <div class="left-label">2</div>
+                                    <div class="left-label">1</div>
+                                </div>
+
+                                <!-- Grid bàn cờ -->
+                                <div class="chess-grid-container">
+                                    <div class="chess-grid" id="chessGrid"></div>
+                                </div>
+
+                                <!-- Labels phía dưới (a-h) -->
+                                <div class="bottom-labels">
+                                    <div class="bottom-label">a</div>
+                                    <div class="bottom-label">b</div>
+                                    <div class="bottom-label">c</div>
+                                    <div class="bottom-label">d</div>
+                                    <div class="bottom-label">e</div>
+                                    <div class="bottom-label">f</div>
+                                    <div class="bottom-label">g</div>
+                                    <div class="bottom-label">h</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pieces-bar" id="piecesBar">
+            <div class="pieces-title">Pick quân i 🌹</div>
+            <div class="pieces-container" id="piecesContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===== CẤU HÌNH =====
+        const CONFIG = {
+            password: '2915',
+            letterText: `HIHI
+            Vô cùng biết ơn chị iu đã đỡ đẻ bé luận cho em.
+            Cảm ơn đã thức đêm dậy sớm lo cho eim và bé. Cảm ơn vì bao dung cho sự bướng của con linh. Thật ra được lo cho tôi thấy cũng thích lóm nhưng tôi phải cãi cho điên tiết lên thì tôi mới chịu nghe, chắc cũng vì chưa bao giờ tôi làm vậy với người khác nên phản ứng đầu tiên của tôi là cãi.
+            Nói tóm lại thì được lo cho thì thấy vui lắm hihi 🫶🌹💩`,
+            chessPieces: [
+                '♙',
+                '♖', '♘', '♗', '♕', '♔'
+            ],
+            typingSpeed: 0.1
+        };
+
+        // ===== BIẾN =====
+        let currentPass = '';
+        let isPlaying = false;
+        let draggedPiece = null;
+        let cellPieces = {};
+        let pieceUsage = {};
+
+        // ===== DOM =====
+        const screen1 = document.getElementById('screen1');
+        const screen2 = document.getElementById('screen2');
+        const screen3 = document.getElementById('screen3');
+        const dots = [
+            document.getElementById('dot1'),
+            document.getElementById('dot2'),
+            document.getElementById('dot3'),
+            document.getElementById('dot4')
+        ];
+        const musicBtn = document.getElementById('musicBtn');
+        const bgMusic = document.getElementById('bgMusic');
+        const letterText = document.getElementById('letterText');
+        const chessBoard = document.getElementById('chessBoard');
+        const chessGrid = document.getElementById('chessGrid');
+        const piecesBar = document.getElementById('piecesBar');
+        const piecesContainer = document.getElementById('piecesContainer');
+        const continueBtn = document.getElementById('continueBtn');
+
+        // ===== HOA RƠI NỀN =====
+        const flowersCanvas = document.getElementById('flowersCanvas');
+        const fctx = flowersCanvas.getContext('2d');
+        flowersCanvas.width = window.innerWidth;
+        flowersCanvas.height = window.innerHeight;
+
+        class Flower {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * flowersCanvas.height;
+            }
+            
+            reset() {
+                this.x = Math.random() * flowersCanvas.width;
+                this.y = -20;
+                this.size = Math.random() * 15 + 10;
+                this.speed = Math.random() * 1 + 0.5;
+                this.swing = Math.random() * 2 - 1;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 2 - 1;
+                
+                const types = ['🌸', '🌺', '🌼', '🌻', '🌹', '💮', '🏵️'];
+                this.emoji = types[Math.floor(Math.random() * types.length)];
+            }
+            
+            update() {
+                this.y += this.speed;
+                this.x += this.swing;
+                this.rotation += this.rotationSpeed;
+                
+                if (this.y > flowersCanvas.height + 20) {
+                    this.reset();
+                }
+            }
+            
+            draw() {
+                fctx.save();
+                fctx.translate(this.x, this.y);
+                fctx.rotate(this.rotation * Math.PI / 180);
+                fctx.font = this.size + 'px Arial';
+                fctx.textAlign = 'center';
+                fctx.textBaseline = 'middle';
+                fctx.fillText(this.emoji, 0, 0);
+                fctx.restore();
+            }
+        }
+
+        const flowers = [];
+        for (let i = 0; i < 50; i++) {
+            flowers.push(new Flower());
+        }
+
+        function animateFlowers() {
+            fctx.clearRect(0, 0, flowersCanvas.width, flowersCanvas.height);
+            flowers.forEach(flower => {
+                flower.update();
+                flower.draw();
+            });
+            requestAnimationFrame(animateFlowers);
+        }
+
+        animateFlowers();
+
+        window.addEventListener('resize', () => {
+            flowersCanvas.width = window.innerWidth;
+            flowersCanvas.height = window.innerHeight;
+        });
+
+        // ===== HOA NỞ SCREEN 2 =====
+        const flowerAnimCanvas = document.getElementById('flowerAnimCanvas');
+        const factx = flowerAnimCanvas.getContext('2d');
+
+        function initFlowerAnimation() {
+            flowerAnimCanvas.width = window.innerWidth;
+            flowerAnimCanvas.height = window.innerHeight;
+
+            class BloomingFlower {
+                constructor(x, y, delay) {
+                    this.x = x;
+                    this.y = y;
+                    this.delay = delay;
+                    this.time = 0;
+                    this.maxSize = Math.random() * 60 + 40;
+                    this.petals = 5 + Math.floor(Math.random() * 3);
+                    this.color = `hsl(${Math.random() * 60 + 320}, 70%, 60%)`;
+                    this.rotation = Math.random() * Math.PI * 2;
+                }
+
+                update(dt) {
+                    if (this.time < this.delay) {
+                        this.time += dt;
+                        return;
+                    }
+                    
+                    this.time += dt;
+                }
+
+                draw() {
+                    if (this.time < this.delay) return;
+
+                    const elapsed = this.time - this.delay;
+                    const progress = Math.min(elapsed / 2, 1);
+                    const size = this.maxSize * this.easeOut(progress);
+
+                    factx.save();
+                    factx.translate(this.x, this.y);
+                    factx.rotate(this.rotation);
+
+                    for (let i = 0; i < this.petals; i++) {
+                        factx.save();
+                        factx.rotate((Math.PI * 2 / this.petals) * i);
+                        
+                        factx.beginPath();
+                        factx.ellipse(0, -size * 0.5, size * 0.3, size * 0.6, 0, 0, Math.PI * 2);
+                        factx.fillStyle = this.color;
+                        factx.fill();
+                        
+                        factx.restore();
+                    }
+
+                    factx.beginPath();
+                    factx.arc(0, 0, size * 0.2, 0, Math.PI * 2);
+                    factx.fillStyle = '#FFD700';
+                    factx.fill();
+
+                    factx.restore();
+                }
+
+                easeOut(t) {
+                    return 1 - Math.pow(1 - t, 3);
+                }
+            }
+
+            const bloomingFlowers = [];
+            const flowerCount = 30;
+
+            for (let i = 0; i < flowerCount; i++) {
+                const x = Math.random() * flowerAnimCanvas.width;
+                const y = Math.random() * flowerAnimCanvas.height;
+                const delay = Math.random() * 2;
+                bloomingFlowers.push(new BloomingFlower(x, y, delay));
+            }
+
+            let lastTime = Date.now();
+            function animateBloom() {
+                const now = Date.now();
+                const dt = (now - lastTime) / 1000;
+                lastTime = now;
+
+                factx.clearRect(0, 0, flowerAnimCanvas.width, flowerAnimCanvas.height);
+                
+                bloomingFlowers.forEach(flower => {
+                    flower.update(dt);
+                    flower.draw();
+                });
+
+                requestAnimationFrame(animateBloom);
+            }
+
+            animateBloom();
+        }
+
+        // ===== MUSIC =====
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicBtn.classList.remove('playing');
+                musicBtn.querySelector('span').textContent = 'Play Music';
+                musicBtn.querySelector('.music-icon').textContent = '▶';
+            } else {
+                bgMusic.play();
+                musicBtn.classList.add('playing');
+                musicBtn.querySelector('span').textContent = 'Pause Music';
+                musicBtn.querySelector('.music-icon').textContent = '⏸';
+            }
+            isPlaying = !isPlaying;
+        });
+
+        // ===== PASSWORD =====
+        function updateDots() {
+            dots.forEach((dot, i) => {
+                if (i < currentPass.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            });
+        }
+
+        function checkPassword() {
+            if (currentPass === CONFIG.password) {
+                screen1.classList.remove('active');
+                setTimeout(() => {
+                    screen2.classList.add('active');
+                    initFlowerAnimation();
+                    
+                    if (!isPlaying) {
+                        bgMusic.play().catch(() => {});
+                        musicBtn.classList.add('playing');
+                        musicBtn.querySelector('span').textContent = 'Pause Music';
+                        musicBtn.querySelector('.music-icon').textContent = '⏸';
+                        isPlaying = true;
+                    }
+                }, 800);
+            } else {
+                dots.forEach(dot => {
+                    dot.style.animation = 'shake 0.5s';
+                    setTimeout(() => dot.style.animation = '', 500);
+                });
+                
+                setTimeout(() => {
+                    currentPass = '';
+                    updateDots();
+                }, 500);
+            }
+        }
+
+        document.querySelectorAll('.num-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const num = btn.dataset.num;
+                
+                if (num === 'del') {
+                    currentPass = currentPass.slice(0, -1);
+                    updateDots();
+                } else if (currentPass.length < 4) {
+                    currentPass += num;
+                    updateDots();
+                    
+                    if (currentPass.length === 4) {
+                        setTimeout(checkPassword, 300);
+                    }
+                }
+            });
+        });
+
+        // ===== NÚT TIẾP TỤC =====
+        continueBtn.addEventListener('click', () => {
+            screen2.classList.remove('active');
+            setTimeout(() => {
+                screen3.classList.add('active');
+                typeLetterText();
+                
+                setTimeout(() => {
+                    chessBoard.classList.add('active');
+                    createChessGrid();
+                    createChessPieces();
+                    piecesBar.classList.add('active');
+                }, 500);
+            }, 800);
+        });
+
+        // ===== TYPING =====
+        function typeLetterText() {
+            let i = 0;
+            const text = CONFIG.letterText;
+            
+            function type() {
+                if (i < text.length) {
+                    letterText.textContent = text.substring(0, i + 1);
+                    i++;
+                    setTimeout(type, CONFIG.typingSpeed);
+                } else {
+                    letterText.classList.add('done');
+                }
+            }
+            
+            type();
+        }
+
+        // ===== BÀN CỜ =====
+        function createChessGrid() {
+            chessGrid.innerHTML = '';
+            
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'chess-cell';
+                    
+                    if ((row + col) % 2 === 0) {
+                        cell.classList.add('light');
+                    } else {
+                        cell.classList.add('dark');
+                    }
+                    
+                    const colLetter = String.fromCharCode(97 + col);
+                    const rowNum = 8 - row;
+                    const cellId = colLetter + rowNum;
+                    
+                    cell.dataset.cell = cellId;
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    cell.addEventListener('dragover', handleDragOver);
+                    cell.addEventListener('drop', handleDrop);
+                    cell.addEventListener('click', () => handleCellClick(cell));
+                    
+                    chessGrid.appendChild(cell);
+                }
+            }
+        }
+
+        function createChessPieces() {
+            piecesContainer.innerHTML = '';
+            
+            CONFIG.chessPieces.forEach((piece, index) => {
+                const pieceEl = document.createElement('div');
+                pieceEl.className = 'chess-piece';
+                pieceEl.textContent = piece;
+                pieceEl.draggable = true;
+                pieceEl.dataset.piece = piece;
+                pieceEl.dataset.index = index;
+                
+                pieceEl.addEventListener('dragstart', handleDragStart);
+                pieceEl.addEventListener('dragend', handleDragEnd);
+                
+                pieceUsage[index] = 0;
+                piecesContainer.appendChild(pieceEl);
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedPiece = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const cell = e.target.closest('.chess-cell');
+            if (!cell || !draggedPiece) return;
+            
+            placePieceInCell(cell, draggedPiece.dataset.piece, draggedPiece.dataset.index);
+        }
+
+        function handleCellClick(cell) {
+            const existingPiece = cell.querySelector('.piece-in-cell');
+            if (existingPiece) {
+                const cellId = cell.dataset.cell;
+                const pieceData = cellPieces[cellId];
+                
+                if (pieceData) {
+                    pieceUsage[pieceData.index]--;
+                    updatePieceStatus(pieceData.index);
+                }
+                
+                existingPiece.style.animation = 'pieceRemove 0.3s ease';
+                setTimeout(() => {
+                    existingPiece.remove();
+                    delete cellPieces[cellId];
+                    cell.classList.remove('has-piece');
+                }, 300);
+            }
+        }
+
+        function placePieceInCell(cell, piece, index) {
+            const cellId = cell.dataset.cell;
+            
+            const oldPiece = cell.querySelector('.piece-in-cell');
+            if (oldPiece) {
+                const oldData = cellPieces[cellId];
+                if (oldData) {
+                    pieceUsage[oldData.index]--;
+                    updatePieceStatus(oldData.index);
+                }
+                oldPiece.remove();
+            }
+            
+            const pieceEl = document.createElement('div');
+            pieceEl.className = 'piece-in-cell';
+            pieceEl.textContent = piece;
+            cell.appendChild(pieceEl);
+            
+            cellPieces[cellId] = { piece, index };
+            cell.classList.add('has-piece');
+            
+            pieceUsage[index]++;
+            updatePieceStatus(index);
+        }
+
+        function updatePieceStatus(index) {
+            const pieceEl = piecesContainer.querySelector(`[data-index="${index}"]`);
+            if (pieceEl) {
+                if (pieceUsage[index] > 0) {
+                    pieceEl.classList.add('used');
+                } else {
+                    pieceEl.classList.remove('used');
+                }
+            }
+        }
+
+        // ===== NÚT ĐIỀU HƯỚNG =====
+        document.getElementById('upBtn').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        document.getElementById('downBtn').addEventListener('click', () => {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
